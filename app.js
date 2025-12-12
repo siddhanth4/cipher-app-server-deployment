@@ -91,13 +91,16 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-/* Attempt DB connection but do not exit process on failure */
+// Try connecting to DB but do not crash if MONGO_URI missing or connection fails.
 connectToMongoDB().catch((err) => {
-  console.error("Initial MongoDB connection failed (continuing):", err.message || err);
+  console.error("MongoDB initial connection failed (continuing without DB):", err.message || err);
 });
 
+// Healthcheck
 app.get("/", (req, res) => res.json({ status: "ok" }));
+
+// Mount the routes
 app.use("/api/messages", messageRoutes);
 
-/* Export app as default for Vercel */
+// Export app as default for Vercel
 export default app;

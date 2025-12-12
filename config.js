@@ -81,10 +81,17 @@ dotenv.config();
 export async function connectToMongoDB() {
   const mongoUri = process.env.MONGO_URI;
   if (!mongoUri) {
-    throw new Error("MONGO_URI not defined");
+    console.warn("MONGO_URI not set — skipping MongoDB connection (OK for local-only routes).");
+    return null;
   }
-  if (mongoose.connection.readyState === 1) return mongoose.connection;
-  await mongoose.connect(mongoUri, { /* defaults for mongoose v7+ */ });
+
+  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  // Connect; allow errors to bubble so caller can log them
+  await mongoose.connect(mongoUri, {});
   console.log("MongoDB connected (readyState:", mongoose.connection.readyState, ")");
   return mongoose.connection;
 }
